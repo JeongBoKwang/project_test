@@ -10,7 +10,7 @@ import com.example.spring.demo.vo.Article;
 @Mapper
 public interface ArticleRepository {
 	
-	public void writeArticle(String title, String body);
+	public void writeArticle(@Param("memberId")int memberId, String title, String body);
 
 	public Article getArticle(@Param("id") int id);
 
