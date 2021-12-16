@@ -21,6 +21,7 @@ public class UsrMemberController {
 	 * public UsrMemberController(MemberService memberService) { this.memberService
 	 * = memberService; }
 	 */
+	//회원가입
 	@RequestMapping("/usr/member/doJoin")
 	@ResponseBody
 	public ResultData<Member> doJoin(String loginId, String loginPw, String name, String nickname, String cellphoneNo,
@@ -59,9 +60,9 @@ public class UsrMemberController {
 		}
 		
 		Member member = memberService.getMemberById(joinRd.getData1());
-		return ResultData.newData(joinRd, member);
+		return ResultData.newData(joinRd, "member", member);
 	}
-	
+	//로그인
 	@RequestMapping("/usr/member/doLogin")
 	@ResponseBody
 	public ResultData doLogin(HttpSession httpSession, String loginId, String loginPw) {
@@ -97,7 +98,7 @@ public class UsrMemberController {
 		
 		return ResultData.from("S-1", Ut.f("%s님 환영합니다.", member.getNickname()));
 	}
-	
+	//로그아웃
 	@RequestMapping("/usr/member/doLogout")
 	@ResponseBody
 	public ResultData doLogout(HttpSession httpSession) {
