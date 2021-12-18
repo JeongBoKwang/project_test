@@ -18,4 +18,8 @@ public class Article {
 	private String extra__writerName;
 	private boolean extra__actorCanDelete;
 	
+	public String getbodyForPrint() {
+		return body.replaceAll("\n", "<br>");
+	}
+	
 }
