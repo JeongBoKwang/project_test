@@ -16,13 +16,14 @@ import com.example.spring.demo.vo.Rq;
 
 @Controller
 public class UsrMemberController {
-	@Autowired
 	private MemberService memberService;
+	private Rq rq;
 
-	/*
-	 * public UsrMemberController(MemberService memberService) { this.memberService
-	 * = memberService; }
-	 */
+	public UsrMemberController(MemberService memberService, Rq rq)  { 
+		this.memberService = memberService;
+		this.rq = rq;
+	}
+	 
 	//회원가입
 	@RequestMapping("/usr/member/doJoin")
 	@ResponseBody
@@ -67,34 +68,32 @@ public class UsrMemberController {
 	//로그인
 	@RequestMapping("/usr/member/doLogin")
 	@ResponseBody
-	public String doLogin(HttpServletRequest req, String loginId, String loginPw) {
-		Rq rq = (Rq)req.getAttribute("rq");
-		
+	public String doLogin(String loginId, String loginPw) {
 		if (rq.isLogined()) {
-			return Ut.jsHistoryBack("이미 로그인되었습니다");
+			return rq.jsHistoryBack("이미 로그인되었습니다");
 		}
 		
 		if (Ut.empty(loginId)) {
-			return Ut.jsHistoryBack("로그인 아이디를 입력해주세요.");
+			return rq.jsHistoryBack("로그인 아이디를 입력해주세요.");
 		}
 
 		if (Ut.empty(loginPw)) {
-			return Ut.jsHistoryBack("로그인 비밀번호를 입력해주세요.");
+			return rq.jsHistoryBack("로그인 비밀번호를 입력해주세요.");
 		}
 
 		Member member = memberService.getMemberByLoginId(loginId);
 		
 		if(member == null) {
-			return Ut.jsHistoryBack("존재하지 않은 로그인 아이디 입니다.");
+			return rq.jsHistoryBack("존재하지 않은 로그인 아이디 입니다.");
 		}
 		
 		if(member.getLoginPw().equals(loginPw) == false) {
-			return Ut.jsHistoryBack("비밀번호가 일치하지 않습니다.");
+			return rq.jsHistoryBack("비밀번호가 일치하지 않습니다.");
 		}
 		
 		rq.login(member);
 		
-		return Ut.jsReplace(Ut.f("%s님 환영합니다.", member.getNickname()), "/");
+		return rq.jsReplace(Ut.f("%s님 환영합니다.", member.getNickname()), "/");
 	}
 	
 	@RequestMapping("/usr/member/login")
@@ -104,15 +103,13 @@ public class UsrMemberController {
 	//로그아웃
 	@RequestMapping("/usr/member/doLogout")
 	@ResponseBody 
-	public String doLogout(HttpServletRequest req) {
-		Rq rq = (Rq)req.getAttribute("rq");
-		
+	public String doLogout() {
 		if (!rq.isLogined()) {
-			return Ut.jsHistoryBack( "이미 로그아웃 상태입니다.");
+			return rq.jsHistoryBack( "이미 로그아웃 상태입니다.");
 		}
 		
 		rq.logout();
 		
-		return Ut.jsReplace("로그아웃 되었습니다.", "/");
+		return rq.jsReplace("로그아웃 되었습니다.", "/");
 	}
 }

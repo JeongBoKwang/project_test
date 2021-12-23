@@ -17,36 +17,50 @@ public class ArticleService {
 		this.articleRepository = articleRepository;
 	}
 
-	public ResultData<Integer> writeArticle(int memberId, String title, String body) {
-		articleRepository.writeArticle(memberId, title, body);
+	public ResultData<Integer> writeArticle(int memberId, String title, String body, int boardId) {
+		articleRepository.writeArticle(memberId, title, body, boardId);
 		int id = articleRepository.getLastInsertId();
 
 		return ResultData.from("S-1", Ut.f("%d번 게시물이 생성되었습니다.", id), "id", id);
 	}
 
-	public List<Article> getForPrintArticles(int actorId) {
-		List<Article> articles =  articleRepository.getArticles();
-		
-		for(Article article : articles) {
+	public List<Article> getForPrintArticles(int actorId, int boardId, String searchKeywordTypeCode,
+			String searchKeyword, int itemsCountInAPage, int page) {
+		/*
+		 * SELECT * FROM article WHERE boardId = 1 ORDER BY id DESC LIMIT 0, 10
+		 */
+
+		int limitStart = (page - 1) * itemsCountInAPage;
+		int limitTake = itemsCountInAPage;
+
+		List<Article> articles = articleRepository.getArticles(boardId, searchKeywordTypeCode, searchKeyword,
+				limitStart, limitTake);
+
+		for (Article article : articles) {
 			updateForPrintDate(actorId, article);
 		}
-		
+
 		return articles;
 	}
-	//게시물작성자가 게시글을 삭제할수있는지
+
+	// 게시물작성자가 게시글을 삭제,수정할수있는지
 	private void updateForPrintDate(int actorId, Article article) {
-		if(article == null) {
+		if (article == null) {
 			return;
-		}	
+		}
 		ResultData actorCanDeleteRd = actorCanDelete(actorId, article);
 		article.setExtra__actorCanDelete(actorCanDeleteRd.isSuccess());
+
+		ResultData actorCanModifyRd = actorCanModify(actorId, article);
+		article.setExtra__actorCanModify(actorCanModifyRd.isSuccess());
 	}
-	//상세
+
+	// 상세
 	public Article getForPrintArticle(int actorId, int id) {
 		Article article = articleRepository.getForPrintArticle(id);
-		
+
 		updateForPrintDate(actorId, article);
-		
+
 		return article;
 	}
 
@@ -73,7 +87,7 @@ public class ArticleService {
 
 		return ResultData.from("S-1", "수정이 가능합니다.");
 	}
-	
+
 	public ResultData actorCanDelete(int actorId, Article article) {
 		if (article == null) {
 			return ResultData.from("F-1", "게시물이 존재하지 않습니다.");
@@ -84,5 +98,22 @@ public class ArticleService {
 		}
 
 		return ResultData.from("S-1", "게시글이 삭제가 가능합니다.");
+	}
+
+	public int getArticlesCount(int boardId, String searchKeywordTypeCode, String searchKeyword) {
+		return articleRepository.getArticlesCount(boardId, searchKeywordTypeCode, searchKeyword);
+	}
+
+	public ResultData<Integer> increaseHitCount(int id) {
+		int affectedRowsCount = articleRepository.increaseHitCount(id);
+		if (affectedRowsCount == 0) {
+			return ResultData.from("F-1", "해당 게시물이 존재하지 않습니다.", "affectedRowsCount", affectedRowsCount);
+		}
+
+		return ResultData.from("S-1", "조회수가 증가되었습니다.", "affectedRowsCount", affectedRowsCount);
+	}
+
+	public int getArticleHitCount(int id) {
+		return articleRepository.getArticleHitCount(id);
 	}
 }
